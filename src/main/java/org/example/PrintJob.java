@@ -26,6 +26,14 @@ public class PrintJob {
         return nextId;
     }
 
+    public long getStart() {
+        return start;
+    }
+
+    public long getFinish() {
+        return finish;
+    }
+
     public Document getDocument() {
         return document;
     }
