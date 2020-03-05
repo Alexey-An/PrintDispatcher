@@ -1,9 +1,48 @@
 package org.example;
 
+import java.util.ArrayList;
 import java.util.Queue;
 import java.util.concurrent.*;
 
 public class Dispatcher {
+
+
+    ConcurrentLinkedQueue<Document> buffer = new ConcurrentLinkedQueue<>();
+    LinkedBlockingQueue<PrintJob> printingQueue = new LinkedBlockingQueue<>();
+    LinkedBlockingQueue<PrintJob> printedDocs = new LinkedBlockingQueue<>();
+
+
+    public void list() {
+
+        printedDocs.forEach(job -> System.out.println("Job ID: " + job.getId() + " Document: " +
+                job.getDocument().getName() + " Type: " + job.getDocument().getType() +
+                " Print time: " + (job.getFinish() - job.getStart())*0.001));
+    };
+
+    public void list(String sortType) {
+
+
+
+        printedDocs.forEach(job -> System.out.println("Job ID: " + job.getId() + " Document: " +
+                job.getDocument().getName() + " Type: " + job.getDocument().getType() +
+                " Print time: " + (job.getFinish() - job.getStart())*0.001));
+    };
+
+    public void terminate() {
+
+    }
+
+    public void cancelJob() {
+
+    }
+
+    public void putDocumentToBuffer(String docName, String type) throws IllegalArgumentException {
+        buffer.add(Document.getInstance(docName, DocType.valueOf(type)));
+    }
+
+    public void restart() {
+
+    }
 
 
     public static void main(String[] args) throws InterruptedException {
@@ -16,6 +55,7 @@ public class Dispatcher {
         Runnable producer = () -> {
 
             while (!buffer.isEmpty()) {
+                System.out.println("Adding document to printing queue");
                 PrintJob job = new PrintJob(buffer.poll(), System.currentTimeMillis());
                 job.setStatus(Status.AWAIT);
                 try {
@@ -29,10 +69,10 @@ public class Dispatcher {
                         " added to print queue. Job ID: " + job.getId());
             }
         };
-
+//
         Runnable consumer = () -> {
             while (true) {
-                System.out.println("INSIDE PRINTER");
+                //System.out.println("");
                 PrintJob job = null;
                 try {
                     job = printingQueue.take();
@@ -41,6 +81,7 @@ public class Dispatcher {
                 }
                 job.setStatus(Status.PRINTING);
                 try {
+                    System.out.println("Initailizing printing process");
                     Thread.sleep(job.getDocument().getType().getPrintTime() * 1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -53,7 +94,7 @@ public class Dispatcher {
                 printedDocs.add(job);
             }
         };
-
+//
         Document doc1 = Document.getInstance("doc1", DocType.A);
         Document doc2 = Document.getInstance("doc2", DocType.B);
         Document doc3 = Document.getInstance("doc3", DocType.C);
