@@ -2,9 +2,9 @@ package org.example;
 
 public enum DocType {
 
-    A(3, "A4"),
-    B(5, "A3"),
-    C(7, "A2");
+    a(10, "A4"),
+    b(10, "A3"),
+    c(10, "A2");
 
     private final int printTime;
     private final String paperFormat;

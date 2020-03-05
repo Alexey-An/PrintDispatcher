@@ -14,8 +14,6 @@ public class EventHandler {
         Scanner in = new Scanner(System.in);
         String userInput = in.nextLine();
 
-
-
         boolean runState = true;
 
         while (runState) {
@@ -23,13 +21,14 @@ public class EventHandler {
             String[] command = userInput.split(" ");
             switch (command[0]) {
                 case "termintate" : {
-                    dispatcher.terminate();
+                    this.dispatcher.terminate();
                     runState = false;
                     break;
                 }
                 case "cancel" : {
                     try {
-                        dispatcher.cancelJob((long) Integer.parseInt(command[1]));
+                        dispatcher.cancelJob(Integer.parseInt(command[1]));
+                        System.out.println(command[1] + 22);
                     } catch (IllegalArgumentException e) {
                         System.out.println("Please provide correct job ID");
                         break;
@@ -75,14 +74,11 @@ public class EventHandler {
                 }
             }
             userInput = in.nextLine();
-
         }
-
     }
 
     public static void main(String[] args) {
         EventHandler handler = new EventHandler();
         handler.handle();
-
     }
 }

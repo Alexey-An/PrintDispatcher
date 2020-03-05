@@ -22,7 +22,7 @@ public class Dispatcher {
                 PrintJob job = new PrintJob(buffer.poll(), System.currentTimeMillis());
                 job.setStatus(Status.AWAIT);
                 try {
-                    Thread.sleep(job.getDocument().getType().getPrintTime() * 1000);
+                    Thread.sleep(job.getDocument().getType().getPrintTime() * 500);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -89,14 +89,16 @@ public class Dispatcher {
 
     public void terminate() {
         this.list();
-        executorService.shutdown();
+        this.executorService.shutdown();
     }
 
-    public void cancelJob(long jobId) {
+    public void cancelJob(long jobId) throws IllegalArgumentException {
 
         for (PrintJob job : this.printingQueue) {
             if (job.getId() == jobId) {
                 this.printingQueue.remove(job);
+                System.out.println("Job " + job.getId() + " has been canceled. \n");
+                break;
             }
         }
     }
@@ -118,31 +120,4 @@ public class Dispatcher {
         this.consumerFuture = executorService.submit(consumer);
     }
 
-    public static void main(String[] args) {
-        Dispatcher dis = new Dispatcher();
-
-        Document doc1 = Document.getInstance("doc1", DocType.C);
-        Document doc2 = Document.getInstance("doc2", DocType.C);
-        PrintJob job1 = new PrintJob(doc1, 1000);
-        PrintJob job2 = new PrintJob(doc2, 2000);
-
-        dis.printingQueue.add(job1);
-        dis.printingQueue.add(job2);
-
-        for (PrintJob job : dis.printingQueue) {
-            System.out.println(job.getDocument().getName());
-        }
-
-        dis.cancelJob(1);
-        for (PrintJob job : dis.printingQueue) {
-            System.out.println("$" + job.getDocument().getName());
-        }
-
-        dis.cancelJob(2);
-
-        for (PrintJob job : dis.printingQueue) {
-            System.out.println("%" + job.getDocument().getName());
-        }
-
-    }
 }
