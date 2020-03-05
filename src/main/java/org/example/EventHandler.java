@@ -1,22 +1,19 @@
 package org.example;
 
-import javax.print.Doc;
 import java.util.Scanner;
 
 public class EventHandler {
 
     private Dispatcher dispatcher = new Dispatcher();
 
-
     public void handle() {
 
-        dispatcher.printedDocs.offer(new PrintJob(Document.getInstance("doc2", DocType.B), 2000));
-        dispatcher.printedDocs.offer(new PrintJob(Document.getInstance("doc1", DocType.A), 1000));
-
-
+        System.out.println("Starting print dispatcher...");
+        dispatcher.startDispatcher();
         System.out.println("Enter command input");
         Scanner in = new Scanner(System.in);
         String userInput = in.nextLine();
+
 
 
         boolean runState = true;
@@ -24,10 +21,24 @@ public class EventHandler {
         while (runState) {
 
             String[] command = userInput.split(" ");
-            System.out.println(command[0]);
             switch (command[0]) {
-                case "termintate" : dispatcher.terminate();
-                case "cancel" : dispatcher.cancelJob();
+                case "termintate" : {
+                    dispatcher.terminate();
+                    runState = false;
+                    break;
+                }
+                case "cancel" : {
+                    try {
+                        dispatcher.cancelJob((long) Integer.parseInt(command[1]));
+                    } catch (IllegalArgumentException e) {
+                        System.out.println("Please provide correct job ID");
+                        break;
+                    } catch (ArrayIndexOutOfBoundsException y) {
+                        System.out.println("You're supposed to specify exact ID the job to cancel it");
+                        break;
+                    }
+
+                }
                 case "restart" : dispatcher.restart();
                 case "print" : {
                     try {
@@ -63,10 +74,7 @@ public class EventHandler {
 
                 }
             }
-            //dispatcher.buffer.forEach(elem -> System.out.println(elem.getName() + elem.getType()));
             userInput = in.nextLine();
-
-            //runState = false;
 
         }
 

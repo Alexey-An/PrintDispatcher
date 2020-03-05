@@ -94,12 +94,11 @@ public class Dispatcher {
 
     public void cancelJob(long jobId) {
 
-        for (PrintJob job : printingQueue) {
+        for (PrintJob job : this.printingQueue) {
             if (job.getId() == jobId) {
-                printingQueue.remove(job);
+                this.printingQueue.remove(job);
             }
         }
-
     }
 
     public void putDocumentToBuffer(String docName, String type) {
@@ -107,7 +106,11 @@ public class Dispatcher {
     }
 
     public void restart() {
-
+        if (executorService.isShutdown()) {
+            executorService = Executors.newCachedThreadPool();
+            this.producerFuture = executorService.submit(producer);
+            this.consumerFuture = executorService.submit(consumer);
+        }
     }
 
     public void startDispatcher() {
@@ -115,82 +118,31 @@ public class Dispatcher {
         this.consumerFuture = executorService.submit(consumer);
     }
 
+    public static void main(String[] args) {
+        Dispatcher dis = new Dispatcher();
 
-    public static void main(String[] args) throws InterruptedException {
+        Document doc1 = Document.getInstance("doc1", DocType.C);
+        Document doc2 = Document.getInstance("doc2", DocType.C);
+        PrintJob job1 = new PrintJob(doc1, 1000);
+        PrintJob job2 = new PrintJob(doc2, 2000);
 
+        dis.printingQueue.add(job1);
+        dis.printingQueue.add(job2);
 
-        ConcurrentLinkedQueue<Document> buffer = new ConcurrentLinkedQueue<>();
-        LinkedBlockingQueue<PrintJob> printingQueue = new LinkedBlockingQueue<>();
-        LinkedBlockingQueue<PrintJob> printedDocs = new LinkedBlockingQueue<>();
+        for (PrintJob job : dis.printingQueue) {
+            System.out.println(job.getDocument().getName());
+        }
 
-        Runnable producer = () -> {
+        dis.cancelJob(1);
+        for (PrintJob job : dis.printingQueue) {
+            System.out.println("$" + job.getDocument().getName());
+        }
 
-            while (!buffer.isEmpty()) {
-                System.out.println("Adding document to printing queue");
-                PrintJob job = new PrintJob(buffer.poll(), System.currentTimeMillis());
-                job.setStatus(Status.AWAIT);
-                try {
-                    Thread.sleep(job.getDocument().getType().getPrintTime() * 1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                job.setStatus(Status.ENQUEUED);
-                printingQueue.add(job);
-                System.out.println("Document " + job.getDocument().getName() +
-                        " added to print queue. Job ID: " + job.getId());
-            }
-        };
-//
-        Runnable consumer = () -> {
-            while (true) {
-                //System.out.println("");
-                PrintJob job = null;
-                try {
-                    job = printingQueue.take();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                job.setStatus(Status.PRINTING);
-                try {
-                    System.out.println("Initailizing printing process");
-                    Thread.sleep(job.getDocument().getType().getPrintTime() * 1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                job.setStatus(Status.COMPLETE);
-                job.setFinish(System.currentTimeMillis());
-                System.out.println("Document " + job.getDocument().getName() +
-                        " has been printed. Job ID: " + job.getId() + " Print time: " +
-                        (job.getFinish() - job.getStart())*0.001 + " seconds");
-                printedDocs.add(job);
-            }
-        };
-//
-        Document doc1 = Document.getInstance("doc1", DocType.A);
-        Document doc2 = Document.getInstance("doc2", DocType.B);
-        Document doc3 = Document.getInstance("doc3", DocType.C);
-        Document doc4 = Document.getInstance("doc4", DocType.B);
-        Document doc5 = Document.getInstance("doc5", DocType.A);
+        dis.cancelJob(2);
 
-
-        buffer.add(doc1);
-        buffer.add(doc2);
-        buffer.add(doc3);
-        buffer.add(doc4);
-        buffer.add(doc5);
-
-        Thread enqueueingThread = new Thread(producer);
-        Thread printingThread = new Thread(consumer);
-        ExecutorService executorService = Executors.newFixedThreadPool(4);
-
-
-        enqueueingThread.start();
-        Thread.sleep(2000);
-        executorService.submit(printingThread);
-
-
-
+        for (PrintJob job : dis.printingQueue) {
+            System.out.println("%" + job.getDocument().getName());
+        }
 
     }
-
 }
