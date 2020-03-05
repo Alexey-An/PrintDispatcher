@@ -56,8 +56,7 @@ public class EventHandler {
                                 "time -- for sorting by print time; \n" +
                                 "size -- for sorting by paper format");
                         break;
-                    }
-                    catch (ArrayIndexOutOfBoundsException y) {
+                    } catch (ArrayIndexOutOfBoundsException y) {
                         dispatcher.list();
                         break;
                     }
@@ -66,6 +65,7 @@ public class EventHandler {
             }
             //dispatcher.buffer.forEach(elem -> System.out.println(elem.getName() + elem.getType()));
             userInput = in.nextLine();
+
             //runState = false;
 
         }
