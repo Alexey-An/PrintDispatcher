@@ -8,21 +8,24 @@ public class EventHandler {
 
     public void handle() {
 
-        System.out.println("Starting print dispatcher...");
         dispatcher.startDispatcher();
         System.out.println("Enter command input");
         Scanner in = new Scanner(System.in);
-        String userInput = in.nextLine();
+        String userInput;
 
         boolean runState = true;
 
         while (runState) {
-
+            userInput = in.nextLine();
             String[] command = userInput.split(" ");
             switch (command[0]) {
-                case "termintate" : {
-                    this.dispatcher.terminate();
+                case "terminate" : {
+                    dispatcher.terminate();
                     runState = false;
+                    break;
+                }
+                case "pause" : {
+                    dispatcher.terminate();
                     break;
                 }
                 case "cancel" : {
@@ -36,7 +39,10 @@ public class EventHandler {
                     break;
 
                 }
-                case "restart" : dispatcher.restart();
+                case "restart" : {
+                    dispatcher = new Dispatcher();
+                    dispatcher.startDispatcher();
+                };
                 case "print" : {
                     try {
                         dispatcher.putDocumentToBuffer(command[1], command[2]);
@@ -64,8 +70,8 @@ public class EventHandler {
                     break;
                 }
             }
-            userInput = in.nextLine();
         }
+        System.exit(0);
     }
 
     public static void main(String[] args) {

@@ -45,11 +45,7 @@ public class Dispatcher {
         while (true) {
 
             if (!printingQueue.isEmpty()) {
-                try {
-                    job = printingQueue.take();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                job = printingQueue.poll();
                 job.setStatus(Status.PRINTING);
                 try {
                     System.out.println("Initailizing printing process");
@@ -95,7 +91,11 @@ public class Dispatcher {
 
     public void terminate() {
         this.list();
-        this.executorService.shutdown();
+        buffer.clear();
+        printingQueue.clear();
+        executorService.shutdown();
+        System.out.println("Shutting down dispatcher...");
+        System.out.println("Print dispatcher shut down: " + executorService.isShutdown());
     }
 
     public void cancelJob(long jobId) throws IllegalArgumentException {
@@ -122,8 +122,12 @@ public class Dispatcher {
     }
 
     public void startDispatcher() {
+        System.out.println("Starting print dispatcher...");
         this.producerFuture = executorService.submit(producer);
         this.consumerFuture = executorService.submit(consumer);
+        if (!executorService.isShutdown()) {
+            System.out.println("Print dispatcher is up and running.");
+        }
     }
 
 }
