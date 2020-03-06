@@ -12,8 +12,6 @@ public class Dispatcher {
     LinkedBlockingQueue<PrintJob> printingQueue = new LinkedBlockingQueue<>();
     LinkedBlockingQueue<PrintJob> printedDocs = new LinkedBlockingQueue<>();
 
-
-
     Runnable producer = () -> {
 
         while (true) {
@@ -46,24 +44,32 @@ public class Dispatcher {
         PrintJob job = null;
         while (true) {
 
-            try {
-                job = printingQueue.take();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            if (!printingQueue.isEmpty()) {
+                try {
+                    job = printingQueue.take();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                job.setStatus(Status.PRINTING);
+                try {
+                    System.out.println("Initailizing printing process");
+                    Thread.sleep(job.getDocument().getType().getPrintTime() * 1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                job.setStatus(Status.COMPLETE);
+                job.setFinish(System.currentTimeMillis());
+                System.out.println("Document " + job.getDocument().getName() +
+                        " has been printed. Job ID: " + job.getId() + " Print time: " +
+                        (job.getFinish() - job.getStart())*0.001 + " seconds");
+                printedDocs.add(job);
+            } else {
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
-            job.setStatus(Status.PRINTING);
-            try {
-                System.out.println("Initailizing printing process");
-                Thread.sleep(job.getDocument().getType().getPrintTime() * 1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            job.setStatus(Status.COMPLETE);
-            job.setFinish(System.currentTimeMillis());
-            System.out.println("Document " + job.getDocument().getName() +
-                    " has been printed. Job ID: " + job.getId() + " Print time: " +
-                    (job.getFinish() - job.getStart())*0.001 + " seconds");
-            printedDocs.add(job);
         }
     };
 

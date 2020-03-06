@@ -28,49 +28,40 @@ public class EventHandler {
                 case "cancel" : {
                     try {
                         dispatcher.cancelJob(Integer.parseInt(command[1]));
-                        System.out.println(command[1] + 22);
                     } catch (IllegalArgumentException e) {
                         System.out.println("Please provide correct job ID");
-                        break;
                     } catch (ArrayIndexOutOfBoundsException y) {
                         System.out.println("You're supposed to specify exact ID the job to cancel it");
-                        break;
                     }
+                    break;
 
                 }
                 case "restart" : dispatcher.restart();
                 case "print" : {
                     try {
                         dispatcher.putDocumentToBuffer(command[1], command[2]);
-                        break;
                     } catch (IllegalArgumentException e) {
                         System.out.println("Please provide correct document name and proper document type: A, B, C");
-                        break;
                     } catch (ArrayIndexOutOfBoundsException y) {
                         System.out.println("You're supposed to provide both document name and its type. Which can be" +
                                 " A, B or C. \n" +
                                 "Please provide correct document type in format: \n" +
                                 "[print] [DOCUMENT NAME] [DOCUMENT TYPE]");
-                        break;
                     }
-
-
+                    break;
                 }
                 case "list" : {
                     try {
                         dispatcher.list(command[1]);
-                        break;
                     } catch (IllegalArgumentException e) {
                         System.out.println("Please provide correct sort type parameter which can be: \n" +
                                 "name -- for sorting by document name; \n" +
                                 "time -- for sorting by print time; \n" +
                                 "size -- for sorting by paper format");
-                        break;
                     } catch (ArrayIndexOutOfBoundsException y) {
                         dispatcher.list();
-                        break;
                     }
-
+                    break;
                 }
             }
             userInput = in.nextLine();
